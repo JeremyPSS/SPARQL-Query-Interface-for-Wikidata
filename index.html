@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es" prefix="foaf: http://xmlns.com/foaf/0.1/">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas SPARQL a RDFa</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            /* padding: 20px; */
+            background-color: #f4f4f4;
+            padding-left: 260px;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .info-panel {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+        button {
+            padding: 10px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: #f8f9fa;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        td {
+            padding: 8px;
+            text-align: left;
+        }
+        tr:nth-child(even) {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Consultas SPARQL a RDFa</h2>
+        <div class="info-panel">
+            <p>Esta página permite realizar consultas SPARQL a datos RDFa y visualizar los resultados en una tabla.</p>
+            <p><strong>Endpoint:</strong> Wikidata</p>
+            <div vocab="http://schema.org/" typeof="Person">
+                <p>Nombres: <span property="name">Jeremy Prieto</span></p>
+                <p>Materia: <span property="email">Inteligencia Artificial</span></p>
+            </div>
+        </div>
+        
+        
+
+        <textarea id="sparqlQuery" placeholder="Escribe tu consulta SPARQL aquí..."></textarea>
+        <button onclick="executeQuery()">Ejecutar Consulta</button>
+        <h3>Resultados:</h3>
+        <table id="resultsTable">
+            <thead>
+                <tr></tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        function executeQuery() {
+            let query = document.getElementById('sparqlQuery').value;
+            let endpoint = "https://query.wikidata.org/sparql"; // Endpoint de ejemplo
+            
+            fetch(endpoint + "?query=" + encodeURIComponent(query) + "&format=json")
+                .then(response => response.json())
+                .then(data => {
+                    displayResults(data);
+                })
+                .catch(error => {
+                    document.getElementById('resultsTable').innerHTML = "<tr><td>Error: " + error + "</td></tr>";
+                });
+        }
+
+        function displayResults(data) {
+            let table = document.getElementById('resultsTable');
+            let thead = table.querySelector('thead tr');
+            let tbody = table.querySelector('tbody');
+
+            thead.innerHTML = "";
+            tbody.innerHTML = "";
+
+            if (data.head.vars.length > 0) {
+                data.head.vars.forEach(varName => {
+                    let th = document.createElement("th");
+                    th.textContent = varName;
+                    thead.appendChild(th);
+                });
+            }
+
+            data.results.bindings.forEach(row => {
+                let tr = document.createElement("tr");
+                data.head.vars.forEach(varName => {
+                    let td = document.createElement("td");
+                    td.textContent = row[varName]?.value || "";
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
